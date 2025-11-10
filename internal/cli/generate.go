@@ -14,7 +14,7 @@ import (
 func GenerateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
-		Short: "Generate mocked Terraform files from configuration",
+		Short: "Generate Terraform files for Localstack from configuration",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return generate()
 		},
@@ -24,9 +24,9 @@ func GenerateCmd() *cobra.Command {
 }
 
 func generate() error {
-	config, err := config.ReadHCLConfig("terraform-mock.hcl")
+	config, err := config.ReadHCLConfig("terraform-localstack.hcl")
 	if err != nil {
-		return fmt.Errorf("failed to read terraform-mock.hcl: %w", err)
+		return fmt.Errorf("failed to read terraform-localstack.hcl: %w", err)
 	}
 
 	module, err := parser.ParseModuleDetailed(config.Source)
@@ -48,7 +48,7 @@ func generate() error {
 		return fmt.Errorf("failed to generate provider config: %w", err)
 	}
 
-	fmt.Printf("Generated mocked Terraform files in: %s\n", config.Output)
+	fmt.Printf("Generated Terraform files for Localstack in: %s\n", config.Output)
 
 	return nil
 }

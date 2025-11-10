@@ -17,7 +17,7 @@ func InitCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "init",
-		Short: "Initialize a mock configuration for a Terraform module",
+		Short: "Initialize configuration for a Terraform module",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if source == "" {
 				return fmt.Errorf("--source is required")
@@ -26,17 +26,17 @@ func InitCmd() *cobra.Command {
 				return fmt.Errorf("--name is required")
 			}
 
-			return initMock(source, name)
+			return initTransform(source, name)
 		},
 	}
 
 	cmd.Flags().StringVar(&source, "source", "", "Path to the original Terraform module")
-	cmd.Flags().StringVar(&name, "name", "", "Name for the mock configuration")
+	cmd.Flags().StringVar(&name, "name", "", "Name for the configuration")
 
 	return cmd
 }
 
-func initMock(source, name string) error {
+func initTransform(source, outputDir string) error {
 	absSource, err := filepath.Abs(source)
 	if err != nil {
 		return fmt.Errorf("failed to resolve source path: %w", err)
@@ -51,8 +51,7 @@ func initMock(source, name string) error {
 		return fmt.Errorf("failed to parse module: %w", err)
 	}
 
-	outputDir := filepath.Join("mocks", name)
-	cfg := &config.MockConfig{
+	cfg := &config.LocalstackConfig{
 		Source:        absSource,
 		Output:        outputDir,
 		KeepResources: resources,
@@ -62,8 +61,8 @@ func initMock(source, name string) error {
 		return fmt.Errorf("failed to write HCL config: %w", err)
 	}
 
-	fmt.Printf("Created terraform-mock.hcl\n")
-	fmt.Printf("Edit the file to customize which resources to keep, then run: tfmock generate\n")
+	fmt.Printf("Created terraform-localstack.hcl\n")
+	fmt.Printf("Edit the file to customize which resources to keep, then run: hydratf generate\n")
 
 	return nil
 }

@@ -10,13 +10,13 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type MockConfig struct {
+type LocalstackConfig struct {
 	Source        string
 	Output        string
 	KeepResources []string
 }
 
-func WriteHCLConfig(config *MockConfig) error {
+func WriteHCLConfig(config *LocalstackConfig) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
@@ -37,10 +37,10 @@ func WriteHCLConfig(config *MockConfig) error {
 		transformBody.SetAttributeValue("keep_resources", cty.ListValEmpty(cty.String))
 	}
 
-	return os.WriteFile("terraform-mock.hcl", f.Bytes(), 0644)
+	return os.WriteFile("terraform-localstack.hcl", f.Bytes(), 0644)
 }
 
-func ReadHCLConfig(filename string) (*MockConfig, error) {
+func ReadHCLConfig(filename string) (*LocalstackConfig, error) {
 	parser := hclparse.NewParser()
 
 	file, diags := parser.ParseHCLFile(filename)
@@ -48,7 +48,7 @@ func ReadHCLConfig(filename string) (*MockConfig, error) {
 		return nil, fmt.Errorf("failed to parse HCL: %s", diags.Error())
 	}
 
-	config := &MockConfig{}
+	config := &LocalstackConfig{}
 
 	content, _, diags := file.Body.PartialContent(&hcl.BodySchema{
 		Blocks: []hcl.BlockHeaderSchema{
