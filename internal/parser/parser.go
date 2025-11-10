@@ -1,4 +1,4 @@
-package main
+package parser
 
 import (
 	"fmt"
@@ -36,13 +36,10 @@ type Output struct {
 }
 
 type Locals struct {
-	//Name string
 	Body *hclwrite.Block
-	//Attributes map[string]interface{}
 }
 
-// parseModule extracts resource types from a module
-func parseModule(modulePath string) ([]string, error) {
+func ParseModule(modulePath string) ([]string, error) {
 	resources := make(map[string]bool)
 
 	// Find all .tf files
@@ -63,7 +60,6 @@ func parseModule(modulePath string) ([]string, error) {
 
 			body := hclFile.Body()
 
-			// Extract resource blocks
 			for _, block := range body.Blocks() {
 				if block.Type() == "resource" {
 					labels := block.Labels()
@@ -89,8 +85,7 @@ func parseModule(modulePath string) ([]string, error) {
 	return result, nil
 }
 
-// parseModuleDetailed extracts full module information
-func parseModuleDetailed(modulePath string) (*TerraformModule, error) {
+func ParseModuleDetailed(modulePath string) (*TerraformModule, error) {
 	module := &TerraformModule{
 		Resources: []*Resource{},
 		Variables: []*Variable{},
@@ -116,7 +111,6 @@ func parseModuleDetailed(modulePath string) (*TerraformModule, error) {
 
 			body := hclFile.Body()
 
-			// Extract resources
 			for _, block := range body.Blocks() {
 				switch block.Type() {
 				case "resource":

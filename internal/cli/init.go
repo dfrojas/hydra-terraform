@@ -1,14 +1,17 @@
-package main
+package cli
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
 
+	"hydratf/internal/config"
+	"hydratf/internal/parser"
+
 	"github.com/spf13/cobra"
 )
 
-func initCmd() *cobra.Command {
+func InitCmd() *cobra.Command {
 	var source string
 	var name string
 
@@ -34,7 +37,6 @@ func initCmd() *cobra.Command {
 }
 
 func initMock(source, name string) error {
-	// Verify source exists
 	absSource, err := filepath.Abs(source)
 	if err != nil {
 		return fmt.Errorf("failed to resolve source path: %w", err)
@@ -44,22 +46,19 @@ func initMock(source, name string) error {
 		return fmt.Errorf("source path does not exist: %s", absSource)
 	}
 
-	// Parse the Terraform module to find resources
-	resources, err := parseModule(absSource)
+	resources, err := parser.ParseModule(absSource)
 	if err != nil {
 		return fmt.Errorf("failed to parse module: %w", err)
 	}
 
-	// Generate HCL configuration
 	outputDir := filepath.Join("mocks", name)
-	config := &MockConfig{
+	cfg := &config.MockConfig{
 		Source:        absSource,
 		Output:        outputDir,
 		KeepResources: resources,
 	}
 
-	// Write terraform-mock.hcl
-	if err := writeHCLConfig(config); err != nil {
+	if err := config.WriteHCLConfig(cfg); err != nil {
 		return fmt.Errorf("failed to write HCL config: %w", err)
 	}
 

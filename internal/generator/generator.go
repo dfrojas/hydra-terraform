@@ -1,15 +1,16 @@
-package main
+package generator
 
 import (
-	//"fmt"
 	"os"
 	"path/filepath"
+
+	"hydratf/internal/parser"
 
 	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
 
-func filterResources(module *TerraformModule, keepResources []string) *TerraformModule {
+func FilterResources(module *parser.TerraformModule, keepResources []string) *parser.TerraformModule {
 	if len(keepResources) == 0 {
 		return module
 	}
@@ -20,8 +21,8 @@ func filterResources(module *TerraformModule, keepResources []string) *Terraform
 		keepSet[r] = true
 	}
 
-	filtered := &TerraformModule{
-		Resources: []*Resource{},
+	filtered := &parser.TerraformModule{
+		Resources: []*parser.Resource{},
 		Variables: module.Variables,
 		Outputs:   module.Outputs,
 	}
@@ -35,22 +36,19 @@ func filterResources(module *TerraformModule, keepResources []string) *Terraform
 	return filtered
 }
 
-func generateTerraformFiles(outputDir string, module *TerraformModule) error {
-	// Generate main.tf with resources
+func GenerateTerraformFiles(outputDir string, module *parser.TerraformModule) error {
 	if len(module.Resources) > 0 {
 		if err := generateMainTF(outputDir, module.Resources, module.Locals); err != nil {
 			return err
 		}
 	}
 
-	// Generate variables.tf
 	if len(module.Variables) > 0 {
 		if err := generateVariablesTF(outputDir, module.Variables); err != nil {
 			return err
 		}
 	}
 
-	// Generate outputs.tf
 	if len(module.Outputs) > 0 {
 		if err := generateOutputsTF(outputDir, module.Outputs); err != nil {
 			return err
@@ -60,16 +58,14 @@ func generateTerraformFiles(outputDir string, module *TerraformModule) error {
 	return nil
 }
 
-func generateMainTF(outputDir string, resources []*Resource, locals []*Locals) error {
+func generateMainTF(outputDir string, resources []*parser.Resource, locals []*parser.Locals) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
 	for _, locals := range locals {
-		// Copy the block
 		newBlock := rootBody.AppendNewBlock("locals", []string{})
 		newBody := newBlock.Body()
 
-		// Copy attributes from original block
 		for name, attr := range locals.Body.Body().Attributes() {
 			newBody.SetAttributeRaw(name, attr.Expr().BuildTokens(nil))
 		}
@@ -78,11 +74,9 @@ func generateMainTF(outputDir string, resources []*Resource, locals []*Locals) e
 	}
 
 	for _, resource := range resources {
-		// Copy the block
 		newBlock := rootBody.AppendNewBlock("resource", []string{resource.Type, resource.Name})
 		newBody := newBlock.Body()
 
-		// Copy attributes from original block
 		for name, attr := range resource.Body.Body().Attributes() {
 			newBody.SetAttributeRaw(name, attr.Expr().BuildTokens(nil))
 		}
@@ -98,7 +92,7 @@ func generateMainTF(outputDir string, resources []*Resource, locals []*Locals) e
 	return os.WriteFile(filepath.Join(outputDir, "main.tf"), f.Bytes(), 0644)
 }
 
-func generateVariablesTF(outputDir string, variables []*Variable) error {
+func generateVariablesTF(outputDir string, variables []*parser.Variable) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
@@ -106,7 +100,6 @@ func generateVariablesTF(outputDir string, variables []*Variable) error {
 		newBlock := rootBody.AppendNewBlock("variable", []string{variable.Name})
 		newBody := newBlock.Body()
 
-		// Copy attributes from original block
 		for name, attr := range variable.Body.Body().Attributes() {
 			newBody.SetAttributeRaw(name, attr.Expr().BuildTokens(nil))
 		}
@@ -117,7 +110,7 @@ func generateVariablesTF(outputDir string, variables []*Variable) error {
 	return os.WriteFile(filepath.Join(outputDir, "variables.tf"), f.Bytes(), 0644)
 }
 
-func generateOutputsTF(outputDir string, outputs []*Output) error {
+func generateOutputsTF(outputDir string, outputs []*parser.Output) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
@@ -125,7 +118,6 @@ func generateOutputsTF(outputDir string, outputs []*Output) error {
 		newBlock := rootBody.AppendNewBlock("output", []string{output.Name})
 		newBody := newBlock.Body()
 
-		// Copy attributes from original block
 		for name, attr := range output.Body.Body().Attributes() {
 			newBody.SetAttributeRaw(name, attr.Expr().BuildTokens(nil))
 		}
@@ -140,7 +132,6 @@ func copyBlock(parent *hclwrite.Body, block *hclwrite.Block) {
 	newBlock := parent.AppendNewBlock(block.Type(), block.Labels())
 	newBody := newBlock.Body()
 
-	// Copy attributes
 	for name, attr := range block.Body().Attributes() {
 		newBody.SetAttributeRaw(name, attr.Expr().BuildTokens(nil))
 	}
@@ -151,7 +142,7 @@ func copyBlock(parent *hclwrite.Body, block *hclwrite.Block) {
 	}
 }
 
-func generateLocalStackProvider(outputDir string) error {
+func GenerateLocalStackProvider(outputDir string) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 

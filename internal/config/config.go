@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -16,21 +16,17 @@ type MockConfig struct {
 	KeepResources []string
 }
 
-func writeHCLConfig(config *MockConfig) error {
+func WriteHCLConfig(config *MockConfig) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
-	// Create transform block
 	transformBlock := rootBody.AppendNewBlock("transform", nil)
 	transformBody := transformBlock.Body()
 
-	// Add source
 	transformBody.SetAttributeValue("source", cty.StringVal(config.Source))
 
-	// Add output
 	transformBody.SetAttributeValue("output", cty.StringVal(config.Output))
 
-	// Add keep_resources as a list
 	if len(config.KeepResources) > 0 {
 		resourceValues := make([]cty.Value, len(config.KeepResources))
 		for i, r := range config.KeepResources {
@@ -41,11 +37,10 @@ func writeHCLConfig(config *MockConfig) error {
 		transformBody.SetAttributeValue("keep_resources", cty.ListValEmpty(cty.String))
 	}
 
-	// Write to file
 	return os.WriteFile("terraform-mock.hcl", f.Bytes(), 0644)
 }
 
-func readHCLConfig(filename string) (*MockConfig, error) {
+func ReadHCLConfig(filename string) (*MockConfig, error) {
 	parser := hclparse.NewParser()
 
 	file, diags := parser.ParseHCLFile(filename)
@@ -55,7 +50,6 @@ func readHCLConfig(filename string) (*MockConfig, error) {
 
 	config := &MockConfig{}
 
-	// Parse the transform block
 	content, _, diags := file.Body.PartialContent(&hcl.BodySchema{
 		Blocks: []hcl.BlockHeaderSchema{
 			{
@@ -78,7 +72,6 @@ func readHCLConfig(filename string) (*MockConfig, error) {
 		return nil, fmt.Errorf("failed to parse attributes: %s", diags.Error())
 	}
 
-	// Extract source
 	if sourceAttr, ok := attrs["source"]; ok {
 		val, diags := sourceAttr.Expr.Value(nil)
 		if !diags.HasErrors() {
@@ -86,7 +79,6 @@ func readHCLConfig(filename string) (*MockConfig, error) {
 		}
 	}
 
-	// Extract output
 	if outputAttr, ok := attrs["output"]; ok {
 		val, diags := outputAttr.Expr.Value(nil)
 		if !diags.HasErrors() {
@@ -94,7 +86,6 @@ func readHCLConfig(filename string) (*MockConfig, error) {
 		}
 	}
 
-	// Extract keep_resources
 	if keepAttr, ok := attrs["keep_resources"]; ok {
 		val, diags := keepAttr.Expr.Value(nil)
 		if !diags.HasErrors() && val.Type().IsListType() {

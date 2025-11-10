@@ -1,13 +1,17 @@
-package main
+package cli
 
 import (
 	"fmt"
 	"os"
 
+	"hydratf/internal/config"
+	"hydratf/internal/generator"
+	"hydratf/internal/parser"
+
 	"github.com/spf13/cobra"
 )
 
-func generateCmd() *cobra.Command {
+func GenerateCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "generate",
 		Short: "Generate mocked Terraform files from configuration",
@@ -20,33 +24,27 @@ func generateCmd() *cobra.Command {
 }
 
 func generate() error {
-	// Read terraform-mock.hcl
-	config, err := readHCLConfig("terraform-mock.hcl")
+	config, err := config.ReadHCLConfig("terraform-mock.hcl")
 	if err != nil {
 		return fmt.Errorf("failed to read terraform-mock.hcl: %w", err)
 	}
 
-	// Parse the source module
-	module, err := parseModuleDetailed(config.Source)
+	module, err := parser.ParseModuleDetailed(config.Source)
 	if err != nil {
 		return fmt.Errorf("failed to parse source module: %w", err)
 	}
 
-	// Filter resources based on keep_resources
-	filtered := filterResources(module, config.KeepResources)
+	filtered := generator.FilterResources(module, config.KeepResources)
 
-	// Create output directory
 	if err := os.MkdirAll(config.Output, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	// Generate new Terraform files
-	if err := generateTerraformFiles(config.Output, filtered); err != nil {
+	if err := generator.GenerateTerraformFiles(config.Output, filtered); err != nil {
 		return fmt.Errorf("failed to generate Terraform files: %w", err)
 	}
 
-	// Generate LocalStack provider configuration
-	if err := generateLocalStackProvider(config.Output); err != nil {
+	if err := generator.GenerateLocalStackProvider(config.Output); err != nil {
 		return fmt.Errorf("failed to generate provider config: %w", err)
 	}
 

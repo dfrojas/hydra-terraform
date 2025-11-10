@@ -5,10 +5,11 @@ sum:
 	go mod tidy
 
 build:
-	go build -o hydratf
+	go build -o bin/hydratf ./cmd/hydratf
 
-init:
-	./hydratf init --source example-module/main.tf --name mocked
+install:
+	go install ./cmd/hydratf
 
-generate:
-	./hydratf generate
+run: build
+	./bin/hydratf init --source test-data/main.tf --name localstack
+	./bin/hydratf generate
