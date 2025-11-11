@@ -10,12 +10,6 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type LocalstackConfig struct {
-	Source        string
-	Output        string
-	KeepResources []string
-}
-
 func WriteHCLConfig(config *LocalstackConfig) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
@@ -37,7 +31,9 @@ func WriteHCLConfig(config *LocalstackConfig) error {
 		transformBody.SetAttributeValue("keep_resources", cty.ListValEmpty(cty.String))
 	}
 
-	return os.WriteFile("terraform-localstack.hcl", f.Bytes(), 0644)
+	transformBody.SetAttributeValue("remove_attributes", cty.MapValEmpty(cty.List(cty.String)))
+
+	return os.WriteFile("terraform-hydra.hcl", f.Bytes(), 0644)
 }
 
 func ReadHCLConfig(filename string) (*LocalstackConfig, error) {
@@ -92,6 +88,20 @@ func ReadHCLConfig(filename string) (*LocalstackConfig, error) {
 			config.KeepResources = make([]string, 0)
 			for _, v := range val.AsValueSlice() {
 				config.KeepResources = append(config.KeepResources, v.AsString())
+			}
+		}
+	}
+
+	if removeAttrs, ok := attrs["remove_attributes"]; ok {
+		val, diags := removeAttrs.Expr.Value(nil)
+		if !diags.HasErrors() && val.Type().IsObjectType() {
+			config.RemoveAttributes = make(map[string][]string)
+			for resource, attrList := range val.AsValueMap() {
+				attributes := []string{}
+				for _, attr := range attrList.AsValueSlice() {
+					attributes = append(attributes, attr.AsString())
+				}
+				config.RemoveAttributes[resource] = attributes
 			}
 		}
 	}

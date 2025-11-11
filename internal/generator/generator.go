@@ -36,9 +36,16 @@ func FilterResources(module *parser.TerraformModule, keepResources []string) *pa
 	return filtered
 }
 
-func GenerateTerraformFiles(outputDir string, module *parser.TerraformModule) error {
+// func RemoveResourceAttributes(terraformCode *parser.TerraformModule, removeAttributes map[string][]string) *parser.TerraformModule {
+// 	if len(removeAttributes) == 0 {
+// 		return terraformCode
+// 	}
+
+// }
+
+func GenerateTerraformFiles(outputDir string, module *parser.TerraformModule, removeAttributes map[string][]string) error {
 	if len(module.Resources) > 0 {
-		if err := generateMainTF(outputDir, module.Resources, module.Locals); err != nil {
+		if err := generateMainTF(outputDir, module.Resources, module.Locals, removeAttributes); err != nil {
 			return err
 		}
 	}
@@ -58,7 +65,7 @@ func GenerateTerraformFiles(outputDir string, module *parser.TerraformModule) er
 	return nil
 }
 
-func generateMainTF(outputDir string, resources []*parser.Resource, locals []*parser.Locals) error {
+func generateMainTF(outputDir string, resources []*parser.Resource, locals []*parser.Locals, removeAttributes map[string][]string) error {
 	f := hclwrite.NewEmptyFile()
 	rootBody := f.Body()
 
@@ -77,12 +84,40 @@ func generateMainTF(outputDir string, resources []*parser.Resource, locals []*pa
 		newBlock := rootBody.AppendNewBlock("resource", []string{resource.Type, resource.Name})
 		newBody := newBlock.Body()
 
-		for name, attr := range resource.Body.Body().Attributes() {
-			newBody.SetAttributeRaw(name, attr.Expr().BuildTokens(nil))
+		for attrName, attrValue := range resource.Body.Body().Attributes() {
+			shouldSkip := false
+			if attrsToRemove, exists := removeAttributes[resource.Type]; exists {
+				for _, attrToRemove := range attrsToRemove {
+					if attrName == attrToRemove {
+						shouldSkip = true
+						break
+					}
+				}
+			}
+
+			if shouldSkip {
+				continue
+			}
+
+			newBody.SetAttributeRaw(attrName, attrValue.Expr().BuildTokens(nil))
 		}
 
 		// Copy nested blocks
 		for _, block := range resource.Body.Body().Blocks() {
+			shouldSkip := false
+			if blocksToRemove, exists := removeAttributes[resource.Type]; exists {
+				for _, blockToRemove := range blocksToRemove {
+					if block.Type() == blockToRemove {
+						shouldSkip = true
+						break
+					}
+				}
+			}
+
+			if shouldSkip {
+				continue
+			}
+
 			copyBlock(newBody, block)
 		}
 

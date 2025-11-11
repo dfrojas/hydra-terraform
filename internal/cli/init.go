@@ -46,10 +46,17 @@ func initTransform(source, outputDir string) error {
 		return fmt.Errorf("source path does not exist: %s", absSource)
 	}
 
-	resources, err := parser.ParseModule(absSource)
+	resources, err := parser.ParseResources(absSource)
 	if err != nil {
 		return fmt.Errorf("failed to parse module: %w", err)
 	}
+
+	// Convert resources to a list of resource type strings
+	// resourceTypes := make([]string, len(resources.Resources))
+	// fmt.Println(resourceTypes)
+	// for i, resource := range resources.Resources {
+	// 	resourceTypes[i] = resource.Type
+	// }
 
 	cfg := &config.LocalstackConfig{
 		Source:        absSource,
@@ -61,7 +68,7 @@ func initTransform(source, outputDir string) error {
 		return fmt.Errorf("failed to write HCL config: %w", err)
 	}
 
-	fmt.Printf("Created terraform-localstack.hcl\n")
+	fmt.Printf("Created terraform-hydra.hcl\n")
 	fmt.Printf("Edit the file to customize which resources to keep, then run: hydratf generate\n")
 
 	return nil

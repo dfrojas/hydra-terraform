@@ -24,9 +24,9 @@ func GenerateCmd() *cobra.Command {
 }
 
 func generate() error {
-	config, err := config.ReadHCLConfig("terraform-localstack.hcl")
+	config, err := config.ReadHCLConfig("terraform-hydra.hcl")
 	if err != nil {
-		return fmt.Errorf("failed to read terraform-localstack.hcl: %w", err)
+		return fmt.Errorf("failed to read terraform-hydra.hcl: %w", err)
 	}
 
 	module, err := parser.ParseModuleDetailed(config.Source)
@@ -40,7 +40,7 @@ func generate() error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	if err := generator.GenerateTerraformFiles(config.Output, filtered); err != nil {
+	if err := generator.GenerateTerraformFiles(config.Output, filtered, config.RemoveAttributes); err != nil {
 		return fmt.Errorf("failed to generate Terraform files: %w", err)
 	}
 

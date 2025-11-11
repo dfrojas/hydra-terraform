@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/hcl/v2/hclwrite"
 )
 
-func ParseModule(modulePath string) ([]string, error) {
+func ParseResources(modulePath string) ([]string, error) {
 	resources := make(map[string]bool)
 
 	// Find all .tf files
