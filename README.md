@@ -107,6 +107,7 @@ transform {
 | Support keep_resources   | ⏳       |
 | Support remove_blocks    | ⏳       |
 | Suport skip_resources    | ⏳       |
+| Remote sources as GH     | ⏳       |
 
 
 <!-- ### Complete Example
