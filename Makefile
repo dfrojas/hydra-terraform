@@ -13,3 +13,6 @@ install:
 run: build
 	./bin/hydratf init --source test-data/main.tf --name localstack
 	./bin/hydratf generate
+
+generate-only:
+	./bin/hydratf generate

@@ -30,7 +30,7 @@ Hydra is written in Go and uses  <a href="https://pkg.go.dev/github.com/hashicor
 
 > [!NOTE]
 >
-> This project was developed from a design document outlining the original vision and architecture. Most of the initial codebase was generated with LLM assistance (Claude) as a way to learn how AI can help accelerate development from concept to implementation.  
+> This project was developed from a design document outlining the original vision and architecture. Most of the initial codebase was generated with LLM assistance (with strong supervision) as a way to learn how AI can help accelerate development from concept to implementation.  
 >  
 > You can find the original design doc <a href="/documentation/desing-doc.md">here</a>.
 

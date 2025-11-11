@@ -19,7 +19,7 @@ The tool will contain three types of filterings:
 
 **skip_resources:** Blacklist approach specified resource types are excluded. Example: `["aws_cloudwatch_log_group"]`
 
-**remove_blocks:** Block-level filtering, remove specific blocks within resources. Example: Remove `vpc_config` from Lambda functions
+**remove_attributes:** Block-level filtering, remove specific attributes within resources. Example: Remove `vpc_config` from Lambda functions
 
 ## LocalStack Configuration
 
@@ -80,7 +80,7 @@ transform {
   
   keep_resources = ["aws_s3_bucket", "aws_iam_role"]
   
-  remove_blocks = {
+  remove_attributes = {
     "aws_lambda_function" = ["vpc_config", "layers"]
   }
   
