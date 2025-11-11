@@ -1,6 +1,6 @@
 <h1>
 <p align="center">
-  <img src="documentation/img/whale-7.png" width="150">
+  <img src="documentation/img/logo-hydra.png" width="150">
   <p align="center">Hydra Terraform</p>
 </h1>
   <p align="center">
@@ -32,7 +32,7 @@ Hydra is written in Go and uses  <a href="https://pkg.go.dev/github.com/hashicor
 >
 > This project was developed from a design document outlining the original vision and architecture. Most of the initial codebase was generated with LLM assistance (Claude) as a way to learn how AI can help accelerate development from concept to implementation.  
 >  
-> You can find the original design doc <a href="desing-doc.md">here</a>.
+> You can find the original design doc <a href="/documentation/desing-doc.md">here</a>.
 
 
 ### Use Cases
