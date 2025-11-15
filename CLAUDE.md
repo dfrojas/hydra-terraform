@@ -1,0 +1,1 @@
+- Do not put redundant comments, for e.g if you adding objects to a HashMap do not write a comment like "add objects to the HashMap"

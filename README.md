@@ -4,7 +4,7 @@
   <p align="center">Hydra Terraform</p>
 </h1>
   <p align="center">
-    Regenerate your Terraform code for LocalStack.
+    Regenerates your Terraform code for LocalStack.
     <br /><br />
     <a href="#about">About</a>
     ·
